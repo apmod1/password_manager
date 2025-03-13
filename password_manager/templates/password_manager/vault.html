@@ -22,15 +22,18 @@
     <!-- Include utility functions -->
     <script src="{% static 'password_manager/js/utils.js' %}"></script>
 
+    <!-- Include Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
     <!-- Include Redux store -->
-    <script src="{% static 'password_manager/js/redux/vaultSlice.js' %}"></script>
-    <script src="{% static 'password_manager/js/redux/store.js' %}"></script>
+    <script src="{% static 'password_manager/js/redux/vaultSlice.js' %}" type="text/babel"></script>
+    <script src="{% static 'password_manager/js/redux/store.js' %}" type="text/babel"></script>
 
     <!-- Include React components -->
-    <script src="{% static 'password_manager/js/components/VaultList.js' %}"></script>
-    <script src="{% static 'password_manager/js/components/VaultItem.js' %}"></script>
-    <script src="{% static 'password_manager/js/components/CreateItem.js' %}"></script>
-    <script src="{% static 'password_manager/js/components/VaultApp.js' %}"></script>
+    <script src="{% static 'password_manager/js/components/VaultList.js' %}" type="text/babel"></script>
+    <script src="{% static 'password_manager/js/components/VaultItem.js' %}" type="text/babel"></script>
+    <script src="{% static 'password_manager/js/components/CreateItem.js' %}" type="text/babel"></script>
+    <script src="{% static 'password_manager/js/components/VaultApp.js' %}" type="text/babel"></script>
 </body>
 
 </html>

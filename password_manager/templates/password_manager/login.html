@@ -68,14 +68,17 @@
     <!-- Include utility functions -->
     <script src="{% static 'password_manager/js/utils.js' %}"></script>
 
+    <!-- Include Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
     <!-- Include React components -->
-    <script src="{% static 'password_manager/js/redux/authSlice.js' %}"></script>
-    <script src="{% static 'password_manager/js/redux/store.js' %}"></script>
-    <script src="{% static 'password_manager/js/components/LoginUsername.js' %}"></script>
-    <script src="{% static 'password_manager/js/components/LoginSecrets.js' %}"></script>
-    <script src="{% static 'password_manager/js/components/LoginPassword.js' %}"></script>
-    <script src="{% static 'password_manager/js/components/LoginTOTP.js' %}"></script>
-    <script src="{% static 'password_manager/js/components/LoginApp.js' %}"></script>
+    <script src="{% static 'password_manager/js/redux/authSlice.js' %}" type="text/babel"></script>
+    <script src="{% static 'password_manager/js/redux/store.js' %}" type="text/babel"></script>
+    <script src="{% static 'password_manager/js/components/LoginUsername.js' %}" type="text/babel"></script>
+    <script src="{% static 'password_manager/js/components/LoginSecrets.js' %}" type="text/babel"></script>
+    <script src="{% static 'password_manager/js/components/LoginPassword.js' %}" type="text/babel"></script>
+    <script src="{% static 'password_manager/js/components/LoginTOTP.js' %}" type="text/babel"></script>
+    <script src="{% static 'password_manager/js/components/LoginApp.js' %}" type="text/babel"></script>
 </body>
 
 </html>
