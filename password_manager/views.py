@@ -133,10 +133,13 @@ def verify_totp(request):
                 # Mark TOTP as verified in session
                 registration_data['totp_verified'] = True
                 request.session['registration_data'] = registration_data
-            return JsonResponse({'success': True})
-        else:
-            return JsonResponse({'success': False, 'error': 'Invalid TOTP code'}, status=400)
-
+                return JsonResponse({'success': True})
+            else:
+                return JsonResponse({'success': False, 'error': 'Invalid TOTP code'}, status=400)
+        except TOTPDevice.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'TOTP device not found'}, status=400)
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
