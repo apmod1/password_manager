@@ -78,8 +78,8 @@ def initial_registration(request):
         user.id = uuid.UUID(user_uuid)
 
         # Generate a unique hash for this user
-        # This is what's missing in your current code
-        unique_hash = hashlib.sha512(str(uuid.uuid4()).encode()).hexdigest()
+        # Using digest() to get binary data for BinaryField
+        unique_hash = hashlib.sha512(str(uuid.uuid4()).encode()).digest()
         user.sha512hash = unique_hash
 
         # Add any other required fields for your CustomUser model
@@ -88,11 +88,12 @@ def initial_registration(request):
         totp_device = get_or_create_totp_device(user)
 
         # Store these temporarily in session
+        # Store only the ID of the totp_device, not the entire object
         request.session['registration_data'] = {
             'uuid': user_uuid,
             'auth_words': auth_words,
             'hmac_words': hmac_words,
-            'totp_device': totp_device,
+            'totp_device_id': totp_device.id,
             'timestamp': datetime.now().timestamp()
         }
 
@@ -125,16 +126,21 @@ def verify_totp(request):
         if not registration_data:
             return JsonResponse({'success': False, 'error': 'Registration session expired'}, status=400)
 
-        totp_device = registration_data.get('totp_device')
-        #Verification logic needs to be updated to use django-otp
-        if totp_device.verify(totp_code):
-            # Mark TOTP as verified in session
-            registration_data['totp_verified'] = True
-            request.session['registration_data'] = registration_data
-            return JsonResponse({'success': True})
-        else:
-            return JsonResponse({'success': False, 'error': 'Invalid TOTP code'}, status=400)
-
+        totp_device_id = registration_data.get('totp_device_id')
+        # Get the actual device from the database using the ID
+        try:
+            totp_device = TOTPDevice.objects.get(id=totp_device_id)
+            if totp_device.verify(totp_code):
+                # Mark TOTP as verified in session
+                registration_data['totp_verified'] = True
+                request.session['registration_data'] = registration_data
+                return JsonResponse({'success': True})
+            else:
+                return JsonResponse({'success': False, 'error': 'Invalid TOTP code'}, status=400)
+        except TOTPDevice.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'TOTP device not found'}, status=400)
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
@@ -175,7 +181,13 @@ def complete_registration(request):
         user_uuid = registration_data.get('uuid')
         auth_words = registration_data.get('auth_words')
         hmac_words = registration_data.get('hmac_words')
-        totp_device = registration_data.get('totp_device')
+        
+        # Get TOTP device from database using ID
+        totp_device_id = registration_data.get('totp_device_id')
+        try:
+            totp_device = TOTPDevice.objects.get(id=totp_device_id)
+        except TOTPDevice.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'TOTP device not found'}, status=400)
 
         # Verify HMAC of wrapped key
         client_hmac_key = " ".join(hmac_words).encode('utf-8')
