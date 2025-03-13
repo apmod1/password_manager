@@ -1,0 +1,56 @@
+  File "/Users/amody/Documents/GitHub/security_tools_copy/manage.py", line 22, in <module>
+    main()
+  File "/Users/amody/Documents/GitHub/security_tools_copy/manage.py", line 18, in main
+    execute_from_command_line(sys.argv)
+  File "/Users/amody/.pyenv/versions/crypt/lib/python3.9/site-packages/django/core/management/__init__.py", line 446, in execute_from_command_line
+    utility.execute()
+  File "/Users/amody/.pyenv/versions/crypt/lib/python3.9/site-packages/django/core/management/__init__.py", line 440, in execute
+    self.fetch_command(subcommand).run_from_argv(self.argv)
+  File "/Users/amody/.pyenv/versions/crypt/lib/python3.9/site-packages/django/core/management/base.py", line 402, in run_from_argv
+    self.execute(*args, **cmd_options)
+  File "/Users/amody/.pyenv/versions/crypt/lib/python3.9/site-packages/django/core/management/base.py", line 443, in execute
+    self.check()
+  File "/Users/amody/.pyenv/versions/crypt/lib/python3.9/site-packages/django/core/management/base.py", line 475, in check
+    all_issues = checks.run_checks(
+  File "/Users/amody/.pyenv/versions/crypt/lib/python3.9/site-packages/django/core/checks/registry.py", line 88, in run_checks
+    new_errors = check(app_configs=app_configs, databases=databases)
+  File "/Users/amody/.pyenv/versions/crypt/lib/python3.9/site-packages/django/core/checks/urls.py", line 14, in check_url_config
+    return check_resolver(resolver)
+  File "/Users/amody/.pyenv/versions/crypt/lib/python3.9/site-packages/django/core/checks/urls.py", line 24, in check_resolver
+    return check_method()
+  File "/Users/amody/.pyenv/versions/crypt/lib/python3.9/site-packages/django/urls/resolvers.py", line 494, in check
+    for pattern in self.url_patterns:
+  File "/Users/amody/.pyenv/versions/crypt/lib/python3.9/site-packages/django/utils/functional.py", line 57, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "/Users/amody/.pyenv/versions/crypt/lib/python3.9/site-packages/django/urls/resolvers.py", line 715, in url_patterns
+    patterns = getattr(self.urlconf_module, "urlpatterns", self.urlconf_module)
+  File "/Users/amody/.pyenv/versions/crypt/lib/python3.9/site-packages/django/utils/functional.py", line 57, in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+  File "/Users/amody/.pyenv/versions/crypt/lib/python3.9/site-packages/django/urls/resolvers.py", line 708, in urlconf_module
+    return import_module(self.urlconf_name)
+  File "/usr/local/Cellar/python@3.9/3.9.21/Frameworks/Python.framework/Versions/3.9/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/Users/amody/Documents/GitHub/security_tools_copy/security_tools/urls.py", line 21, in <module>
+    path("password_manager/", include("password_manager.urls")),
+  File "/Users/amody/.pyenv/versions/crypt/lib/python3.9/site-packages/django/urls/conf.py", line 38, in include
+    urlconf_module = import_module(urlconf_module)
+  File "/usr/local/Cellar/python@3.9/3.9.21/Frameworks/Python.framework/Versions/3.9/lib/python3.9/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 986, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 680, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/Users/amody/Documents/GitHub/security_tools_copy/password_manager/urls.py", line 2, in <module>
+    from . import views
+  File "/Users/amody/Documents/GitHub/security_tools_copy/password_manager/views.py", line 14, in <module>
+    from .models import CustomUser, OTPDevice #Assuming this is a custom model, needs replacement for full django-otp integration
+ImportError: cannot import name 'OTPDevice' from 'password_manager.models' (/Users/amody/Documents/GitHub/security_tools_copy/password_manager/models.py)
+(crypt) amody@01-4844 security_tools_copy % 
