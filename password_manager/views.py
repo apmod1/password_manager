@@ -479,11 +479,6 @@ def user_data_detail(request, item_id):
                         'error': 'HMAC verification failed'
                     }, status=401)
 
-
-
-
-
-
             # Update the item
             item.encrypted_data = encrypted_data
             if name:
