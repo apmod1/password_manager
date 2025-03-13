@@ -11,3 +11,5 @@ pillow>=9.4.0,<9.5.0
 cryptography>=39.0.1,<39.1.0
 django-storages>=1.13.2,<1.14.0
 gunicorn>=20.1.0,<20.2.0
+django
+django

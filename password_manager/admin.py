@@ -10,9 +10,9 @@ class CustomUserAdmin(admin.ModelAdmin):
     
 @admin.register(UserData)
 class UserDataAdmin(admin.ModelAdmin):
-    list_display = ('user', 'id')
-    search_fields = ('user__email', 'id')
-    readonly_fields = ('id',)
+    list_display = ('user', 'item_id')
+    search_fields = ('user__email', 'item_id')
+    readonly_fields = ('item_id',)
 
 @admin.register(RememberedDevice)
 class RememberedDeviceAdmin(admin.ModelAdmin):
