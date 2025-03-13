@@ -90,11 +90,19 @@ DATABASES = {
         "PASSWORD": os.environ.get("DB_PASSWORD", ""),
         "HOST": os.environ.get("DB_HOST", "localhost"),
         "PORT": os.environ.get("DB_PORT", "5432"),
+    },
+    "dynamodb": {
+        "ENGINE": "django_dynamodb",  # This is a placeholder - you'll use boto3 directly
+        "REGION": os.environ.get("AWS_REGION", "us-east-1"),
+        "ENDPOINT_URL": os.environ.get("DYNAMODB_ENDPOINT_URL", None),
     }
 }
 
 # To enable AWS RDS PostgreSQL as the default database, uncomment the following:
 # DATABASES["default"] = DATABASES["postgres"]
+
+# Configure database router
+DATABASE_ROUTERS = ['password_manager.utils.db_router.DatabaseRouter']
 
 AUTH_USER_MODEL = "password_manager.CustomUser"
 

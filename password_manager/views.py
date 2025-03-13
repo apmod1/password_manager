@@ -33,7 +33,7 @@ import os
 
 def get_or_create_totp_device(user, confirmed=False):
     """Get or create a TOTP device for a user"""
-    devices = devices_for_user(user, confirmed=None) #This function is not defined and needs to be added for full integration.
+    devices = devices_for_user(user, confirmed=None)
     for device in devices:
         if isinstance(device, TOTPDevice):
             return device
@@ -77,7 +77,7 @@ def initial_registration(request):
 
         # Generate TOTP device using django-otp (partially implemented)
         try:
-            user = CustomUser.objects.get(id=uuid.UUID(user_uuid)) #This part will likely need to be updated for a full integration
+            user = CustomUser.objects.get(id=uuid.UUID(user_uuid))
         except CustomUser.DoesNotExist:
             user = CustomUser()
             user.id = uuid.UUID(user_uuid)
@@ -85,7 +85,7 @@ def initial_registration(request):
 
         totp_device = get_or_create_totp_device(user)
         #Instead of totp_secret, use device.key
-        
+
         # Store these temporarily in session
         request.session['registration_data'] = {
             'uuid': user_uuid,
@@ -333,7 +333,7 @@ def login_step2(request):
                 return JsonResponse({'success': False, 'error': 'Invalid TOTP code'}, status=401)
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
-        
+
 
         # TOTP verified, complete login
         # Return the wrapped key and other necessary data
@@ -361,18 +361,55 @@ def user_data_list(request):
 
     try:
         user = CustomUser.objects.get(id=uuid.UUID(user_id))
-        # Get all vault items for this user
-        items = UserData.objects.filter(user=user)
+        # Decide which database to use based on environment setting
+        use_dynamodb = os.environ.get('USE_DYNAMODB', 'false').lower() == 'true'
 
-        # Return metadata only (not the encrypted content)
-        items_data = [{
-            'id': str(item.item_id),
-            'name': item.name,
-            'created_at': item.created_at.isoformat(),
-            'updated_at': item.updated_at.isoformat()
-        } for item in items]
+        if use_dynamodb:
+            # DynamoDB implementation
+            import boto3
+            from botocore.exceptions import ClientError
 
-        return JsonResponse({'success': True, 'items': items_data})
+            # Get DynamoDB endpoint from environment variables
+            endpoint_url = os.environ.get('DYNAMODB_ENDPOINT_URL', None)
+
+            # Initialize DynamoDB client
+            dynamodb = boto3.resource('dynamodb', endpoint_url=endpoint_url)
+            table = dynamodb.Table('UserVault')
+
+            try:
+                response = table.query(
+                    KeyConditionExpression=boto3.dynamodb.conditions.Key('user_id').eq(str(user.id))
+                )
+                items_list = []
+
+                for item in response.get('Items', []):
+                    items_list.append({
+                        'item_id': item.get('item_id'),
+                        'name': item.get('name'),
+                        'encrypted_data': item.get('encrypted_data'),
+                        'created_at': item.get('created_at'),
+                        'updated_at': item.get('updated_at')
+                    })
+
+                return JsonResponse({'success': True, 'items': items_list})
+            except ClientError as e:
+                return JsonResponse({
+                    'success': False, 
+                    'error': f"Database error: {str(e)}"
+                }, status=500)
+        else:
+            # SQL (Django ORM) implementation
+            items = UserData.objects.filter(user=user)
+
+            # Return metadata only (not the encrypted content)
+            items_data = [{
+                'id': str(item.item_id),
+                'name': item.name,
+                'created_at': item.created_at.isoformat(),
+                'updated_at': item.updated_at.isoformat()
+            } for item in items]
+
+            return JsonResponse({'success': True, 'items': items_data})
 
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
