@@ -1,0 +1,2 @@
+
+# Initialize migrations package
