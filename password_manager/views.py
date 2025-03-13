@@ -91,7 +91,8 @@ def initial_registration(request):
             'uuid': user_uuid,
             'auth_words': auth_words,
             'hmac_words': hmac_words,
-            'totp_device': totp_device, #Storing the device object instead of secret
+            'totp_device_id': totp_device.id, # Store just the ID, not the whole object
+            'totp_key': totp_device.key, # Store the key separately
             'timestamp': datetime.now().timestamp()
         }
 
@@ -124,9 +125,11 @@ def verify_totp(request):
         if not registration_data:
             return JsonResponse({'success': False, 'error': 'Registration session expired'}, status=400)
 
-        totp_device = registration_data.get('totp_device')
-        #Verification logic needs to be updated to use django-otp
-        if totp_device.verify(totp_code):
+        totp_device_id = registration_data.get('totp_device_id')
+        # Get the actual device from the database using the ID
+        try:
+            totp_device = TOTPDevice.objects.get(id=totp_device_id)
+            if totp_device.verify(totp_code):
             # Mark TOTP as verified in session
             registration_data['totp_verified'] = True
             request.session['registration_data'] = registration_data
@@ -174,7 +177,13 @@ def complete_registration(request):
         user_uuid = registration_data.get('uuid')
         auth_words = registration_data.get('auth_words')
         hmac_words = registration_data.get('hmac_words')
-        totp_device = registration_data.get('totp_device')
+        totp_device_id = registration_data.get('totp_device_id')
+        totp_key = registration_data.get('totp_key')
+        # Get the actual device if needed
+        try:
+            totp_device = TOTPDevice.objects.get(id=totp_device_id)
+        except TOTPDevice.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'TOTP device not found'}, status=400)
 
         # Verify HMAC of wrapped key
         client_hmac_key = " ".join(hmac_words).encode('utf-8')
@@ -197,7 +206,7 @@ def complete_registration(request):
         user.sha512hash = base64.b64decode(username_hash)
         user.wrapped_key = base64.b64decode(wrapped_key)
         user.hmac_wrapped_key = received_hmac
-        user.totp_secret_key = totp_device.key.encode('utf-8') #Storing the key from the device.
+        user.totp_secret_key = totp_key.encode('utf-8') #Storing the key from the session
         user.alg_unwrap_key = algorithm
 
         # Store hashed auth words and HMAC words
