@@ -5,6 +5,8 @@ from django.contrib.auth.models import PermissionsMixin, UserManager
 from django_otp.models import Device, ThrottlingMixin
 import hashlib
 import base64
+from django_otp.models import Device
+from django_otp.plugins.otp_totp.models import TOTPDevice
 
 
 class CustomUserManager(UserManager):

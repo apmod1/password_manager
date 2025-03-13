@@ -11,7 +11,10 @@ from django.views.decorators.http import require_http_methods
 from django.conf import settings
 
 from .forms import CustomUserCreationForm
-from .models import CustomUser, OTPDevice #Assuming this is a custom model, needs replacement for full django-otp integration
+from .models import CustomUser
+from django_otp.plugins.otp_totp.models import TOTPDevice
+from django_otp.util import random_hex
+from django_otp import devices_for_user
 
 import pyotp
 import qrcode
