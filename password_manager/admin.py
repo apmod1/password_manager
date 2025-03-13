@@ -10,7 +10,7 @@ class CustomUserAdmin(admin.ModelAdmin):
     
 @admin.register(UserData)
 class UserDataAdmin(admin.ModelAdmin):
-    list_display = ('user', 'item_id')
+    list_display = ('user', 'name')
     search_fields = ('user__email', 'item_id')
     readonly_fields = ('item_id',)
 
