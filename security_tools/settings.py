@@ -78,8 +78,19 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
+    },
+    "postgres": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("DB_NAME", "passwordmanager"),
+        "USER": os.environ.get("DB_USER", "postgres"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", ""),
+        "HOST": os.environ.get("DB_HOST", "localhost"),
+        "PORT": os.environ.get("DB_PORT", "5432"),
     }
 }
+
+# To enable AWS RDS PostgreSQL as the default database, uncomment the following:
+# DATABASES["default"] = DATABASES["postgres"]
 
 AUTH_USER_MODEL = "password_manager.CustomUser"
 

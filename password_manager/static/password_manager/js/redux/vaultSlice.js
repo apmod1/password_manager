@@ -115,3 +115,201 @@ const vaultActions = {
     setFilter: (filter) => ({ type: SET_FILTER, payload: filter }),
     setSearchQuery: (query) => ({ type: SET_SEARCH_QUERY, payload: query })
 };
+/**
+ * Redux slice for vault management
+ */
+
+const initialState = {
+  vaultItems: [],
+  currentItem: null,
+  isLoading: false,
+  error: null,
+  unwrappedKey: null, // This will be securely derived after login
+  hmacWords: null, // The 5 words used for HMAC generation
+};
+
+const vaultSlice = {
+  actions: {
+    fetchVaultItemsStart: 'vault/fetchVaultItemsStart',
+    fetchVaultItemsSuccess: 'vault/fetchVaultItemsSuccess',
+    fetchVaultItemsFailure: 'vault/fetchVaultItemsFailure',
+    selectVaultItem: 'vault/selectVaultItem',
+    createVaultItemStart: 'vault/createVaultItemStart',
+    createVaultItemSuccess: 'vault/createVaultItemSuccess',
+    createVaultItemFailure: 'vault/createVaultItemFailure',
+    updateVaultItemStart: 'vault/updateVaultItemStart',
+    updateVaultItemSuccess: 'vault/updateVaultItemSuccess',
+    updateVaultItemFailure: 'vault/updateVaultItemFailure',
+    deleteVaultItemStart: 'vault/deleteVaultItemStart',
+    deleteVaultItemSuccess: 'vault/deleteVaultItemSuccess',
+    deleteVaultItemFailure: 'vault/deleteVaultItemFailure',
+    setUnwrappedKey: 'vault/setUnwrappedKey',
+    setHmacWords: 'vault/setHmacWords',
+    clearVault: 'vault/clearVault',
+  },
+  
+  // Action creators
+  fetchVaultItemsStart: () => ({ type: vaultSlice.actions.fetchVaultItemsStart }),
+  fetchVaultItemsSuccess: (items) => ({ 
+    type: vaultSlice.actions.fetchVaultItemsSuccess, 
+    payload: items 
+  }),
+  fetchVaultItemsFailure: (error) => ({ 
+    type: vaultSlice.actions.fetchVaultItemsFailure, 
+    payload: error 
+  }),
+  
+  selectVaultItem: (item) => ({ 
+    type: vaultSlice.actions.selectVaultItem, 
+    payload: item 
+  }),
+  
+  createVaultItemStart: () => ({ type: vaultSlice.actions.createVaultItemStart }),
+  createVaultItemSuccess: (item) => ({ 
+    type: vaultSlice.actions.createVaultItemSuccess, 
+    payload: item 
+  }),
+  createVaultItemFailure: (error) => ({ 
+    type: vaultSlice.actions.createVaultItemFailure, 
+    payload: error 
+  }),
+  
+  updateVaultItemStart: () => ({ type: vaultSlice.actions.updateVaultItemStart }),
+  updateVaultItemSuccess: (item) => ({ 
+    type: vaultSlice.actions.updateVaultItemSuccess, 
+    payload: item 
+  }),
+  updateVaultItemFailure: (error) => ({ 
+    type: vaultSlice.actions.updateVaultItemFailure, 
+    payload: error 
+  }),
+  
+  deleteVaultItemStart: () => ({ type: vaultSlice.actions.deleteVaultItemStart }),
+  deleteVaultItemSuccess: (itemId) => ({ 
+    type: vaultSlice.actions.deleteVaultItemSuccess, 
+    payload: itemId 
+  }),
+  deleteVaultItemFailure: (error) => ({ 
+    type: vaultSlice.actions.deleteVaultItemFailure, 
+    payload: error 
+  }),
+  
+  setUnwrappedKey: (key) => ({ 
+    type: vaultSlice.actions.setUnwrappedKey, 
+    payload: key 
+  }),
+  
+  setHmacWords: (words) => ({ 
+    type: vaultSlice.actions.setHmacWords, 
+    payload: words 
+  }),
+  
+  clearVault: () => ({ type: vaultSlice.actions.clearVault }),
+  
+  // Reducer
+  reducer: function(state = initialState, action) {
+    switch (action.type) {
+      case vaultSlice.actions.fetchVaultItemsStart:
+        return {
+          ...state,
+          isLoading: true,
+          error: null
+        };
+      case vaultSlice.actions.fetchVaultItemsSuccess:
+        return {
+          ...state,
+          vaultItems: action.payload,
+          isLoading: false,
+          error: null
+        };
+      case vaultSlice.actions.fetchVaultItemsFailure:
+        return {
+          ...state,
+          isLoading: false,
+          error: action.payload
+        };
+      case vaultSlice.actions.selectVaultItem:
+        return {
+          ...state,
+          currentItem: action.payload
+        };
+      case vaultSlice.actions.createVaultItemStart:
+        return {
+          ...state,
+          isLoading: true,
+          error: null
+        };
+      case vaultSlice.actions.createVaultItemSuccess:
+        return {
+          ...state,
+          vaultItems: [...state.vaultItems, action.payload],
+          isLoading: false,
+          error: null
+        };
+      case vaultSlice.actions.createVaultItemFailure:
+        return {
+          ...state,
+          isLoading: false,
+          error: action.payload
+        };
+      case vaultSlice.actions.updateVaultItemStart:
+        return {
+          ...state,
+          isLoading: true,
+          error: null
+        };
+      case vaultSlice.actions.updateVaultItemSuccess:
+        return {
+          ...state,
+          vaultItems: state.vaultItems.map(item => 
+            item.id === action.payload.id ? action.payload : item
+          ),
+          currentItem: action.payload,
+          isLoading: false,
+          error: null
+        };
+      case vaultSlice.actions.updateVaultItemFailure:
+        return {
+          ...state,
+          isLoading: false,
+          error: action.payload
+        };
+      case vaultSlice.actions.deleteVaultItemStart:
+        return {
+          ...state,
+          isLoading: true,
+          error: null
+        };
+      case vaultSlice.actions.deleteVaultItemSuccess:
+        return {
+          ...state,
+          vaultItems: state.vaultItems.filter(item => item.id !== action.payload),
+          currentItem: state.currentItem && state.currentItem.id === action.payload ? null : state.currentItem,
+          isLoading: false,
+          error: null
+        };
+      case vaultSlice.actions.deleteVaultItemFailure:
+        return {
+          ...state,
+          isLoading: false,
+          error: action.payload
+        };
+      case vaultSlice.actions.setUnwrappedKey:
+        return {
+          ...state,
+          unwrappedKey: action.payload
+        };
+      case vaultSlice.actions.setHmacWords:
+        return {
+          ...state,
+          hmacWords: action.payload
+        };
+      case vaultSlice.actions.clearVault:
+        return {
+          ...initialState
+        };
+      default:
+        return state;
+    }
+  }
+};
