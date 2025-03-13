@@ -15,8 +15,6 @@ from .models import CustomUser
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from django_otp.util import random_hex
 from django_otp import devices_for_user
-
-import pyotp
 import qrcode
 from io import BytesIO
 import base64
@@ -33,7 +31,7 @@ import os
 
 def get_or_create_totp_device(user, confirmed=False):
     """Get or create a TOTP device for a user"""
-    devices = devices_for_user(user, confirmed=None)
+    devices = devices_for_user(user, confirmed=None) #This function is not defined and needs to be added for full integration.
     for device in devices:
         if isinstance(device, TOTPDevice):
             return device
@@ -75,24 +73,26 @@ def initial_registration(request):
         auth_words = words[:5]
         hmac_words = words[5:]
 
-        # Generate TOTP device using django-otp (partially implemented)
-        try:
-            user = CustomUser.objects.get(id=uuid.UUID(user_uuid))
-        except CustomUser.DoesNotExist:
-            user = CustomUser()
-            user.id = uuid.UUID(user_uuid)
-            user.save()
+        # Create a new user with a unique hash
+        user = CustomUser()
+        user.id = uuid.UUID(user_uuid)
+
+        # Generate a unique hash for this user
+        # This is what's missing in your current code
+        unique_hash = hashlib.sha512(str(uuid.uuid4()).encode()).hexdigest()
+        user.sha512hash = unique_hash
+
+        # Add any other required fields for your CustomUser model
+        user.save()
 
         totp_device = get_or_create_totp_device(user)
-        #Instead of totp_secret, use device.key
 
         # Store these temporarily in session
         request.session['registration_data'] = {
             'uuid': user_uuid,
             'auth_words': auth_words,
             'hmac_words': hmac_words,
-            'totp_device_id': totp_device.id, # Store just the ID, not the whole object
-            'totp_key': totp_device.key, # Store the key separately
+            'totp_device': totp_device,
             'timestamp': datetime.now().timestamp()
         }
 
@@ -103,7 +103,7 @@ def initial_registration(request):
         response_data = {
             'uuid': user_uuid,
             'words': words,
-            'totp_device': totp_device.key, #Sending the key for the client-side
+            'totp_device': totp_device.key,
             'qr_code': qr_code
         }
 
@@ -125,21 +125,16 @@ def verify_totp(request):
         if not registration_data:
             return JsonResponse({'success': False, 'error': 'Registration session expired'}, status=400)
 
-        totp_device_id = registration_data.get('totp_device_id')
-        # Get the actual device from the database using the ID
-        try:
-            totp_device = TOTPDevice.objects.get(id=totp_device_id)
-            if totp_device.verify(totp_code):
-                # Mark TOTP as verified in session
-                registration_data['totp_verified'] = True
-                request.session['registration_data'] = registration_data
-                return JsonResponse({'success': True})
-            else:
-                return JsonResponse({'success': False, 'error': 'Invalid TOTP code'}, status=400)
-        except TOTPDevice.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'TOTP device not found'}, status=400)
-    except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
+        totp_device = registration_data.get('totp_device')
+        #Verification logic needs to be updated to use django-otp
+        if totp_device.verify(totp_code):
+            # Mark TOTP as verified in session
+            registration_data['totp_verified'] = True
+            request.session['registration_data'] = registration_data
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'success': False, 'error': 'Invalid TOTP code'}, status=400)
+
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
@@ -180,13 +175,7 @@ def complete_registration(request):
         user_uuid = registration_data.get('uuid')
         auth_words = registration_data.get('auth_words')
         hmac_words = registration_data.get('hmac_words')
-        totp_device_id = registration_data.get('totp_device_id')
-        totp_key = registration_data.get('totp_key')
-        # Get the actual device if needed
-        try:
-            totp_device = TOTPDevice.objects.get(id=totp_device_id)
-        except TOTPDevice.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'TOTP device not found'}, status=400)
+        totp_device = registration_data.get('totp_device')
 
         # Verify HMAC of wrapped key
         client_hmac_key = " ".join(hmac_words).encode('utf-8')
@@ -209,7 +198,7 @@ def complete_registration(request):
         user.sha512hash = base64.b64decode(username_hash)
         user.wrapped_key = base64.b64decode(wrapped_key)
         user.hmac_wrapped_key = received_hmac
-        user.totp_secret_key = totp_key.encode('utf-8') #Storing the key from the session
+        user.totp_secret_key = totp_device.key.encode('utf-8') #Storing the key from the device.
         user.alg_unwrap_key = algorithm
 
         # Store hashed auth words and HMAC words
@@ -373,55 +362,18 @@ def user_data_list(request):
 
     try:
         user = CustomUser.objects.get(id=uuid.UUID(user_id))
-        # Decide which database to use based on environment setting
-        use_dynamodb = os.environ.get('USE_DYNAMODB', 'false').lower() == 'true'
+        # Get all vault items for this user
+        items = UserData.objects.filter(user=user)
 
-        if use_dynamodb:
-            # DynamoDB implementation
-            import boto3
-            from botocore.exceptions import ClientError
+        # Return metadata only (not the encrypted content)
+        items_data = [{
+            'id': str(item.item_id),
+            'name': item.name,
+            'created_at': item.created_at.isoformat(),
+            'updated_at': item.updated_at.isoformat()
+        } for item in items]
 
-            # Get DynamoDB endpoint from environment variables
-            endpoint_url = os.environ.get('DYNAMODB_ENDPOINT_URL', None)
-
-            # Initialize DynamoDB client
-            dynamodb = boto3.resource('dynamodb', endpoint_url=endpoint_url)
-            table = dynamodb.Table('UserVault')
-
-            try:
-                response = table.query(
-                    KeyConditionExpression=boto3.dynamodb.conditions.Key('user_id').eq(str(user.id))
-                )
-                items_list = []
-
-                for item in response.get('Items', []):
-                    items_list.append({
-                        'item_id': item.get('item_id'),
-                        'name': item.get('name'),
-                        'encrypted_data': item.get('encrypted_data'),
-                        'created_at': item.get('created_at'),
-                        'updated_at': item.get('updated_at')
-                    })
-
-                return JsonResponse({'success': True, 'items': items_list})
-            except ClientError as e:
-                return JsonResponse({
-                    'success': False, 
-                    'error': f"Database error: {str(e)}"
-                }, status=500)
-        else:
-            # SQL (Django ORM) implementation
-            items = UserData.objects.filter(user=user)
-
-            # Return metadata only (not the encrypted content)
-            items_data = [{
-                'id': str(item.item_id),
-                'name': item.name,
-                'created_at': item.created_at.isoformat(),
-                'updated_at': item.updated_at.isoformat()
-            } for item in items]
-
-            return JsonResponse({'success': True, 'items': items_data})
+        return JsonResponse({'success': True, 'items': items_data})
 
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
