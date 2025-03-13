@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Password Manager - Login</title>
+    <link rel="stylesheet" href="{% static 'password_manager/css/styles.css' %}">
+    <!-- React and Redux -->
+    <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/redux@4.1.1/dist/redux.min.js"></script>
+    <script src="https://unpkg.com/react-redux@7.2.5/dist/react-redux.min.js"></script>
+    <!-- Crypto libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/argon2-browser@1.18.0/lib/argon2.min.js"></script>
+</head>
+
+<body>
+    <div id="root">
+        <!-- React will render here -->
+    </div>
+
+    <!-- Include utility functions -->
+    <script src="{% static 'password_manager/js/utils.js' %}"></script>
+
+    <!-- Include React components -->
+    <script src="{% static 'password_manager/js/redux/authSlice.js' %}"></script>
+    <script src="{% static 'password_manager/js/redux/store.js' %}"></script>
+    <script src="{% static 'password_manager/js/components/LoginUsername.js' %}"></script>
+    <script src="{% static 'password_manager/js/components/LoginSecrets.js' %}"></script>
+    <script src="{% static 'password_manager/js/components/LoginPassword.js' %}"></script>
+    <script src="{% static 'password_manager/js/components/LoginTOTP.js' %}"></script>
+    <script src="{% static 'password_manager/js/components/LoginApp.js' %}"></script>
+</body>
+
+</html>

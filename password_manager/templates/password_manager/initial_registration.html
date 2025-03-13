@@ -1,0 +1,72 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Password Manager - Registration</title>
+    <link rel="stylesheet" href="{% static 'password_manager/css/styles.css' %}">
+    <!-- React and Redux -->
+    <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/redux@4.1.1/dist/redux.min.js"></script>
+    <script src="https://unpkg.com/react-redux@7.2.5/dist/react-redux.min.js"></script>
+    <!-- QR Code generation -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
+</head>
+
+<body>
+    <div id="root">
+        <!-- React will render here -->
+        <!-- Fallback content -->
+        <div class="registration-container">
+            <h1>Secure Password Manager Registration</h1>
+            <div class="warning-box">
+                <p><strong>IMPORTANT:</strong> You must save the following information securely.</p>
+                <p>Without these, you <strong>cannot recover your account</strong>:</p>
+            </div>
+
+            <div class="registration-section">
+                <h2>Your UUID</h2>
+                <code id="uuid-display">{{ uuid }}</code>
+                <button id="copy-uuid" class="btn">Copy UUID</button>
+            </div>
+
+            <div class="registration-section">
+                <h2>Your 10 Security Words</h2>
+                <p>First 5 words are for authentication, last 5 for HMAC generation</p>
+                <ul id="word-list">
+                    {% for word in words %}
+                    <li>{{ word }}</li>
+                    {% endfor %}
+                </ul>
+                <button id="copy-words" class="btn">Copy Words</button>
+            </div>
+
+            <div class="registration-section">
+                <h2>TOTP Setup</h2>
+                <p>Scan this QR code with your authenticator app:</p>
+                <div class="qr-container">
+                    <img src="{{ qr_code }}" alt="TOTP QR Code">
+                </div>
+                <p>Or enter this code manually:</p>
+                <code id="totp-code">{{ totp_secret }}</code>
+
+                <div class="totp-verification">
+                    <input type="text" id="totp-input" maxlength="6" placeholder="Enter 6-digit code">
+                    <button id="verify-totp" class="btn primary">Verify Code</button>
+                </div>
+            </div>
+
+            <div class="registration-section">
+                <button id="download-credentials" class="btn warning">Download Secure Credentials</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'password_manager/js/register.js' %}"></script>
+    <script src="{% static 'password_manager/js/components/InitialRegistration.js' %}" type="text/babel"></script>
+</body>
+
+</html>
