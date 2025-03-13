@@ -15,8 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import redirect
+
+def redirect_to_password_manager(request):
+    return redirect('password_manager:user_data_list')
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("password_manager/", include("password_manager.urls")),
+    path("", redirect_to_password_manager, name="home"),
 ]
