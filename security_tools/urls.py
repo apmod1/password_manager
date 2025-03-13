@@ -18,7 +18,7 @@ from django.urls import path, include
 from django.shortcuts import redirect
 
 def redirect_to_password_manager(request):
-    return redirect('password_manager:user_data_list')
+    return redirect('password_manager:login')
 
 urlpatterns = [
     path("admin/", admin.site.urls),

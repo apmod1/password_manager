@@ -17,6 +17,50 @@
 </head>
 
 <body>
+    <div class="container">
+        <h1>Login to Password Manager</h1>
+        
+        <div id="login-form">
+            <h2>Step 1: Enter Credentials</h2>
+            <form id="credentials-form">
+                <div class="form-group">
+                    <label for="username">Username or UUID:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Authentication Words or Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Continue</button>
+            </form>
+            
+            <div id="totp-form" style="display: none;">
+                <h2>Step 2: Enter TOTP Code</h2>
+                <p>Please enter the 6-digit code from your authenticator app</p>
+                <div class="form-group">
+                    <input type="text" id="totp-code" name="totp-code" maxlength="6" required>
+                </div>
+                <button id="verify-totp" class="btn btn-primary">Verify</button>
+            </div>
+        </div>
+        
+        <div class="links">
+            <p>Don't have an account? <a href="/password_manager/initial-registration/">Register</a></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('credentials-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Here would be the code to hash the username and password
+            // and send to the backend for authentication
+            document.getElementById('credentials-form').style.display = 'none';
+            document.getElementById('totp-form').style.display = 'block';
+        });
+    </script>
+</body>
+
+<body>
     <div id="root">
         <!-- React will render here -->
     </div>
