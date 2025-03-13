@@ -31,13 +31,17 @@ import os
 
 def get_or_create_totp_device(user, confirmed=False):
     """Get or create a TOTP device for a user"""
-    devices = devices_for_user(user, confirmed=None) #This function is not defined and needs to be added for full integration.
+    # Get devices for user using django-otp function
+    devices = devices_for_user(user, confirmed=None)
+    
+    # Check if a TOTP device already exists
     for device in devices:
         if isinstance(device, TOTPDevice):
             return device
 
-    # Create a new device
+    # Create a new device with a random key
     device = TOTPDevice(user=user, name="default")
+    device.key = random_hex(20)  # Generate a random key
     device.confirmed = confirmed
     device.save()
     return device
@@ -65,50 +69,59 @@ def initial_registration(request):
     - TOTP secret
     """
     if request.method == "GET":
-        # Generate UUID
-        user_uuid = str(uuid.uuid4())
+        try:
+            # Generate UUID
+            user_uuid = str(uuid.uuid4())
 
-        # Generate 10 random words
-        words = generate_random_words(10)
-        auth_words = words[:5]
-        hmac_words = words[5:]
+            # Generate 10 random words
+            words = generate_random_words(10)
+            auth_words = words[:5]
+            hmac_words = words[5:]
 
-        # Create a new user with a unique hash
-        user = CustomUser()
-        user.id = uuid.UUID(user_uuid)
+            # Create a new user with a unique hash
+            user = CustomUser()
+            user.id = uuid.UUID(user_uuid)
 
-        # Generate a unique hash for this user
-        # Using digest() to get binary data for BinaryField
-        unique_hash = hashlib.sha512(str(uuid.uuid4()).encode()).digest()
-        user.sha512hash = unique_hash
+            # Generate a unique hash for this user
+            # Using digest() to get binary data for BinaryField
+            unique_hash = hashlib.sha512(str(uuid.uuid4()).encode()).digest()
+            user.sha512hash = unique_hash
 
-        # Add any other required fields for your CustomUser model
-        user.save()
+            # Add any other required fields for your CustomUser model
+            user.save()
 
-        totp_device = get_or_create_totp_device(user)
+            # Create TOTP device for this user
+            totp_device = get_or_create_totp_device(user)
+            
+            if not totp_device or not hasattr(totp_device, 'id') or not hasattr(totp_device, 'key'):
+                raise ValueError("Failed to create valid TOTP device")
 
-        # Store these temporarily in session
-        # Store only the ID of the totp_device, not the entire object
-        request.session['registration_data'] = {
-            'uuid': user_uuid,
-            'auth_words': auth_words,
-            'hmac_words': hmac_words,
-            'totp_device_id': totp_device.id,
-            'timestamp': datetime.now().timestamp()
-        }
+            # Store these temporarily in session
+            # Store only the ID of the totp_device, not the entire object
+            request.session['registration_data'] = {
+                'uuid': user_uuid,
+                'auth_words': auth_words,
+                'hmac_words': hmac_words,
+                'totp_device_id': totp_device.id,
+                'timestamp': datetime.now().timestamp()
+            }
 
-        # Generate QR code for TOTP
-        qr_code = generate_qr_code(totp_device, user_uuid)
+            # Generate QR code for TOTP
+            qr_code = generate_qr_code(totp_device, user_uuid)
 
-        # Create response data
-        response_data = {
-            'uuid': user_uuid,
-            'words': words,
-            'totp_device': totp_device.key,
-            'qr_code': qr_code
-        }
+            # Create response data
+            response_data = {
+                'uuid': user_uuid,
+                'words': words,
+                'totp_device': totp_device.key,
+                'qr_code': qr_code
+            }
 
-        return render(request, "password_manager/initial_registration.html", response_data)
+            return render(request, "password_manager/initial_registration.html", response_data)
+            
+        except Exception as e:
+            print(f"Error in initial registration: {str(e)}")
+            return HttpResponse(f"Error during registration setup: {str(e)}", status=500)
     else:
         return HttpResponse("Method not allowed", status=405)
 
@@ -120,6 +133,9 @@ def verify_totp(request):
     try:
         data = json.loads(request.body)
         totp_code = data.get('totp_code')
+        
+        if not totp_code:
+            return JsonResponse({'success': False, 'error': 'TOTP code is required'}, status=400)
 
         # Get registration data from session
         registration_data = request.session.get('registration_data')
@@ -127,22 +143,28 @@ def verify_totp(request):
             return JsonResponse({'success': False, 'error': 'Registration session expired'}, status=400)
 
         totp_device_id = registration_data.get('totp_device_id')
+        if not totp_device_id:
+            return JsonResponse({'success': False, 'error': 'TOTP device ID not found in session'}, status=400)
+            
         # Get the actual device from the database using the ID
         try:
             totp_device = TOTPDevice.objects.get(id=totp_device_id)
+            
+            # Verify the TOTP code
             if totp_device.verify(totp_code):
                 # Mark TOTP as verified in session
                 registration_data['totp_verified'] = True
                 request.session['registration_data'] = registration_data
                 return JsonResponse({'success': True})
             else:
-                return JsonResponse({'success': False, 'error': 'Invalid TOTP code'}, status=400)
+                return JsonResponse({'success': False, 'error': 'Invalid TOTP code. Please make sure your authenticator app is in sync.'}, status=400)
         except TOTPDevice.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'TOTP device not found'}, status=400)
+            return JsonResponse({'success': False, 'error': 'TOTP device not found. Please restart registration.'}, status=400)
     except json.JSONDecodeError:
         return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
     except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+        print(f"TOTP verification error: {str(e)}")  # Log the error for debugging
+        return JsonResponse({'success': False, 'error': f'Error verifying TOTP: {str(e)}'}, status=500)
 
 
 @csrf_exempt
