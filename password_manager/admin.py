@@ -1,3 +1,4 @@
+
 from django.contrib import admin
 from .models import CustomUser, UserData, RememberedDevice
 
@@ -8,4 +9,13 @@ class CustomUserAdmin(admin.ModelAdmin):
     readonly_fields = ('id', 'date_joined')
     
 @admin.register(UserData)
-class UserDataAdmin(admin.ModelAdmi
+class UserDataAdmin(admin.ModelAdmin):
+    list_display = ('user', 'id')
+    search_fields = ('user__email', 'id')
+    readonly_fields = ('id',)
+
+@admin.register(RememberedDevice)
+class RememberedDeviceAdmin(admin.ModelAdmin):
+    list_display = ('user', 'id', 'created_at')
+    search_fields = ('user__email', 'id')
+    readonly_fields = ('id', 'created_at')
