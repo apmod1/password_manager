@@ -1,5 +1,6 @@
+
 // Redux store configuration
-const { createStore, combineReducers } = Redux;
+const { combineReducers } = Redux;
 const { Provider } = ReactRedux;
 
 // Import reducers
@@ -30,5 +31,5 @@ const rootReducer = combineReducers({
   vault: vaultReducer
 });
 
-// Create store
-const store = createStore(rootReducer);
+// Create store - use Redux's createStore only once
+const store = Redux.createStore(rootReducer);

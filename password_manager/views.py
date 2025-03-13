@@ -130,9 +130,9 @@ def verify_totp(request):
         try:
             totp_device = TOTPDevice.objects.get(id=totp_device_id)
             if totp_device.verify(totp_code):
-            # Mark TOTP as verified in session
-            registration_data['totp_verified'] = True
-            request.session['registration_data'] = registration_data
+                # Mark TOTP as verified in session
+                registration_data['totp_verified'] = True
+                request.session['registration_data'] = registration_data
             return JsonResponse({'success': True})
         else:
             return JsonResponse({'success': False, 'error': 'Invalid TOTP code'}, status=400)
