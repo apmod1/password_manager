@@ -36,7 +36,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     )
     wrapped_key = models.BinaryField(max_length=256)
     hmac_wrapped_key = models.BinaryField(max_length=256)
-    totp_secret_key = models.BinaryField(max_length=20)
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, unique=True
     )
@@ -87,8 +86,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         })
 
 
-class OTPDevice(ThrottlingMixin, Device):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+# Using django-otp models directly instead of custom OTP device
 
 
 class UserData(models.Model):
