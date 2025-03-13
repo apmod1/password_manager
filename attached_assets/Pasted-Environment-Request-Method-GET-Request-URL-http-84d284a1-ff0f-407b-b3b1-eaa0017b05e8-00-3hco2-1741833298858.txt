@@ -1,0 +1,64 @@
+Environment:
+
+
+Request Method: GET
+Request URL: http://84d284a1-ff0f-407b-b3b1-eaa0017b05e8-00-3hco24by6tv9p.kirk.replit.dev/password_manager/initial-registration/
+
+Django Version: 4.1.13
+Python Version: 3.12.7
+Installed Applications:
+['django.contrib.admin',
+ 'django.contrib.auth',
+ 'django.contrib.contenttypes',
+ 'django.contrib.sessions',
+ 'django.contrib.messages',
+ 'django.contrib.staticfiles',
+ 'django_otp',
+ 'django_otp.plugins.otp_totp',
+ 'django_otp.plugins.otp_static',
+ 'password_manager']
+Installed Middleware:
+['django.middleware.security.SecurityMiddleware',
+ 'django.contrib.sessions.middleware.SessionMiddleware',
+ 'django.middleware.common.CommonMiddleware',
+ 'django.middleware.csrf.CsrfViewMiddleware',
+ 'django.contrib.auth.middleware.AuthenticationMiddleware',
+ 'django.contrib.messages.middleware.MessageMiddleware',
+ 'django.middleware.clickjacking.XFrameOptionsMiddleware']
+
+
+
+Traceback (most recent call last):
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/django/utils/deprecation.py", line 138, in __call__
+    response = self.process_response(request, response)
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/django/contrib/sessions/middleware.py", line 59, in process_response
+    request.session.save()
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/django/contrib/sessions/backends/db.py", line 80, in save
+    return self.create()
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/django/contrib/sessions/backends/db.py", line 54, in create
+    self.save(must_create=True)
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/django/contrib/sessions/backends/db.py", line 82, in save
+    obj = self.create_model_instance(data)
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/django/contrib/sessions/backends/db.py", line 69, in create_model_instance
+    session_data=self.encode(data),
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/django/contrib/sessions/backends/base.py", line 94, in encode
+    return signing.dumps(
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/django/core/signing.py", line 150, in dumps
+    return TimestampSigner(key, salt=salt).sign_object(
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/django/core/signing.py", line 228, in sign_object
+    data = serializer().dumps(obj)
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/django/core/signing.py", line 125, in dumps
+    return json.dumps(obj, separators=(",", ":")).encode("latin-1")
+  File "/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/json/__init__.py", line 238, in dumps
+    **kw).encode(obj)
+  File "/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/json/encoder.py", line 258, in iterencode
+    return _iterencode(o, 0)
+  File "/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+
+Exception Type: TypeError at /password_manager/initial-registration/
+Exception Value: Object of type TOTPDevice is not JSON serializable
